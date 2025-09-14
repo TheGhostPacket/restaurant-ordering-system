@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akwaaba Restaurant - Ghana's #1 Digital Restaurant</title>
+    <title>Akwaaba Restaurant - Order Online</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ce1126">
     <style>
         * {
             margin: 0;
@@ -21,6 +23,9 @@
             --gray-200: #e5e7eb;
             --gray-500: #6b7280;
             --gray-800: #1f2937;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
         }
 
         body {
@@ -39,11 +44,12 @@
 
         .header {
             background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
+            padding: 25px;
             border-radius: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
             border: 3px solid transparent;
             background-image: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)), 
                             linear-gradient(45deg, var(--ghana-red), var(--ghana-gold), var(--ghana-green));
@@ -51,57 +57,71 @@
             background-clip: content-box, border-box;
         }
 
+        .loyalty-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: linear-gradient(45deg, var(--ghana-gold), #f59e0b);
+            color: var(--gray-800);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .install-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: none;
+        }
+
         .header h1 {
             color: var(--gray-800);
-            margin-bottom: 15px;
-            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
             background: linear-gradient(45deg, var(--ghana-red), var(--ghana-gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .loyalty-badge {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: linear-gradient(45deg, var(--ghana-gold), #f59e0b);
-            color: var(--gray-800);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(252, 209, 22, 0.4);
-        }
-
-        .controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .control-btn {
-            background: var(--primary-blue);
+        .daily-special {
+            background: linear-gradient(45deg, var(--warning), #d97706);
             color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            text-align: center;
+            animation: pulse 2s infinite;
         }
 
-        .control-btn:hover {
-            transform: scale(1.1);
-            background: var(--ghana-red);
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .queue-status {
+            background: var(--success);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
         }
 
         .nav-buttons {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
+            gap: 10px;
+            margin: 25px 0;
             flex-wrap: wrap;
         }
 
@@ -109,17 +129,17 @@
             background: linear-gradient(45deg, var(--ghana-red), #b91c1c);
             color: white;
             border: none;
-            padding: 15px 25px;
-            border-radius: 30px;
+            padding: 12px 20px;
+            border-radius: 25px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 500;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(206, 17, 38, 0.3);
         }
 
         .nav-btn:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(206, 17, 38, 0.4);
         }
 
@@ -130,9 +150,9 @@
         .section {
             display: none;
             background: rgba(255, 255, 255, 0.95);
-            padding: 40px;
+            padding: 30px;
             border-radius: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             border-left: 5px solid var(--ghana-gold);
         }
@@ -149,37 +169,81 @@
 
         .section h2 {
             color: var(--gray-800);
-            margin-bottom: 30px;
-            font-size: 2.2rem;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
             border-bottom: 3px solid var(--ghana-gold);
-            padding-bottom: 15px;
+            padding-bottom: 10px;
+        }
+
+        .menu-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--ghana-green);
         }
 
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 25px;
-            margin-top: 30px;
+            margin-top: 25px;
         }
 
         .menu-item {
             background: white;
-            border-radius: 18px;
+            border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             border: 2px solid var(--gray-200);
+            position: relative;
         }
 
         .menu-item:hover {
-            transform: translateY(-8px);
+            transform: translateY(-5px);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
             border-color: var(--ghana-gold);
         }
 
+        .menu-item.sold-out {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .menu-item.sold-out::after {
+            content: "SOLD OUT";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--error);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 10;
+        }
+
         .menu-image {
-            height: 200px;
-            background: linear-gradient(45deg, #f59e0b, #d97706);
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+            background-color: linear-gradient(45deg, #f59e0b, #d97706);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -188,53 +252,103 @@
             position: relative;
         }
 
-        .popularity-badge {
+        .special-badge {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: var(--ghana-red);
+            top: 10px;
+            left: 10px;
+            background: var(--error);
             color: white;
-            padding: 5px 12px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .combo-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--ghana-green);
+            color: white;
+            padding: 5px 10px;
             border-radius: 15px;
             font-size: 0.8rem;
             font-weight: bold;
         }
 
         .menu-content {
-            padding: 25px;
+            padding: 20px;
         }
 
         .menu-item h3 {
             color: var(--gray-800);
-            margin-bottom: 10px;
-            font-size: 1.4rem;
+            margin-bottom: 8px;
+            font-size: 1.3rem;
         }
 
         .menu-item p {
             color: var(--gray-500);
             margin-bottom: 15px;
-            line-height: 1.6;
+            line-height: 1.5;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .option-group {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .option-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin-bottom: 5px;
+        }
+
+        .option-group select {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid var(--gray-200);
+            border-radius: 5px;
+            font-size: 0.85rem;
         }
 
         .price-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+        }
+
+        .price-info {
+            display: flex;
+            flex-direction: column;
         }
 
         .price {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: var(--ghana-red);
+        }
+
+        .combo-price {
+            font-size: 0.9rem;
+            color: var(--success);
+            text-decoration: line-through;
         }
 
         .loyalty-points {
             background: var(--ghana-gold);
             color: var(--gray-800);
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 0.85rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
             font-weight: bold;
         }
 
@@ -242,31 +356,31 @@
             background: linear-gradient(45deg, var(--primary-blue), #1d4ed8);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
+            padding: 10px 20px;
+            border-radius: 20px;
             cursor: pointer;
             width: 100%;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 500;
             transition: all 0.3s ease;
         }
 
         .add-btn:hover {
             background: linear-gradient(45deg, #1d4ed8, var(--primary-blue));
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
         .cart-floating {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
+            bottom: 20px;
+            right: 20px;
             background: var(--ghana-red);
             color: white;
             border: none;
-            width: 70px;
-            height: 70px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             cursor: pointer;
             box-shadow: 0 6px 25px rgba(206, 17, 38, 0.4);
             z-index: 1000;
@@ -279,130 +393,39 @@
 
         .cart-badge {
             position: absolute;
-            top: -8px;
-            right: -8px;
+            top: -5px;
+            right: -5px;
             background: var(--ghana-gold);
             color: var(--gray-800);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 25px;
+            height: 25px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-weight: bold;
         }
 
-        .form-section {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin: 20px 0;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: var(--gray-800);
-        }
-
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid var(--gray-200);
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-        }
-
-        .btn {
-            background: linear-gradient(45deg, var(--primary-blue), #1d4ed8);
+        .group-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: var(--ghana-green);
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            font-size: 1.2rem;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0, 107, 63, 0.4);
+            z-index: 1000;
             transition: all 0.3s ease;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(30, 64, 175, 0.4);
-        }
-
-        .btn-success {
-            background: linear-gradient(45deg, var(--ghana-green), #16a34a);
-        }
-
-        .btn-warning {
-            background: linear-gradient(45deg, #f59e0b, #d97706);
-        }
-
-        .info-card {
-            background: linear-gradient(45deg, var(--primary-blue), #7c3aed);
-            color: white;
-            padding: 25px;
-            border-radius: 15px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .success-message {
-            background: #dcfce7;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-        }
-
-        .error-message {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border-left: 5px solid var(--ghana-gold);
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--ghana-red);
-            display: block;
-        }
-
-        .stat-label {
-            color: var(--gray-500);
-            margin-top: 5px;
+        .group-btn:hover {
+            transform: scale(1.1);
         }
 
         .modal {
@@ -422,7 +445,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 40px;
+            padding: 30px;
             border-radius: 20px;
             max-width: 600px;
             width: 90%;
@@ -436,23 +459,157 @@
             right: 20px;
             background: none;
             border: none;
-            font-size: 2rem;
+            font-size: 1.5rem;
             cursor: pointer;
             color: var(--gray-500);
         }
 
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--gray-800);
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .payment-method {
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover, .payment-method.selected {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .payment-method h4 {
+            margin-bottom: 5px;
+            color: var(--gray-800);
+        }
+
+        .payment-method small {
+            color: var(--gray-500);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary-blue), #1d4ed8);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, var(--success), #059669);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, var(--warning), #d97706);
+        }
+
+        .split-bill {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border-left: 5px solid var(--ghana-green);
+        }
+
+        .split-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .split-btn {
+            background: var(--ghana-green);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .offline-indicator {
+            position: fixed;
+            bottom: 10px;
+            left: 20px;
+            background: var(--warning);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
             
-            .controls, .loyalty-badge {
+            .loyalty-badge, .install-btn {
                 position: relative;
                 top: 0;
                 left: 0;
                 right: 0;
-                margin: 10px auto;
-                justify-content: center;
+                margin: 10px auto 15px;
+                display: inline-block;
             }
             
             .menu-grid {
@@ -460,12 +617,21 @@
             }
             
             .nav-buttons {
-                gap: 8px;
+                gap: 5px;
             }
             
             .nav-btn {
-                padding: 12px 18px;
-                font-size: 0.9rem;
+                padding: 10px 15px;
+                font-size: 0.8rem;
+            }
+
+            .options-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .option-group {
+                min-width: auto;
             }
         }
     </style>
@@ -473,135 +639,68 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="loyalty-badge">👑 VIP Member - 1,250 points</div>
-            
-            <div class="controls">
-                <button class="control-btn" onclick="toggleTheme()" title="Toggle Theme">🌙</button>
-                <button class="control-btn" onclick="toggleLanguage()" title="Language">🌍</button>
-                <button class="control-btn" onclick="showDemo()" title="Demo Info">ℹ️</button>
-            </div>
+            <div class="loyalty-badge" id="loyaltyPoints">👑 VIP - 1,250 pts</div>
+            <button class="install-btn" id="installBtn" onclick="installApp()">📱 Install App</button>
 
             <h1>🍽️ Akwaaba Restaurant</h1>
-            <p style="font-size: 1.2rem; color: var(--gray-500); margin-bottom: 20px;">
-                Ghana's Most Advanced Digital Restaurant Experience
+            <p style="font-size: 1.1rem; color: var(--gray-500); margin-bottom: 15px;">
+                Ghana's Premier Digital Dining Experience
             </p>
             
-            <div class="info-card">
-                ☀️ Perfect weather for our refreshing Sobolo! Pairs excellently with spicy Kelewele.
+            <div class="daily-special">
+                ⭐ Today's Special: Banku with Tilapia Combo - Save 15%! ⏰ Limited Time
+            </div>
+
+            <div class="queue-status" id="queueStatus">
+                🟢 Kitchen Status: Normal wait times • Next available slot: 2:30 PM
             </div>
         </div>
 
         <div class="nav-buttons">
             <button class="nav-btn active" onclick="showSection('menu')">🍽️ Menu</button>
+            <button class="nav-btn" onclick="showSection('combos')">🍱 Combos</button>
+            <button class="nav-btn" onclick="showSection('specials')">⭐ Daily Specials</button>
             <button class="nav-btn" onclick="showSection('track')">📍 Track Order</button>
-            <button class="nav-btn" onclick="showSection('about')">ℹ️ About Us</button>
-            <button class="nav-btn" onclick="showSection('admin')">👨‍🍳 Admin</button>
+            <button class="nav-btn" onclick="showSection('group')">👥 Group Order</button>
         </div>
 
         <!-- Menu Section -->
         <div id="menu" class="section active">
-            <h2>🍽️ Our Authentic Ghanaian Menu</h2>
+            <h2>🍽️ Our Menu</h2>
             
-            <div class="info-card">
-                <strong>🤖 AI Chef Recommends:</strong> Based on today's weather and trending orders, try our Banku with Tilapia! 94% customer satisfaction rate.
+            <div style="background: var(--primary-blue); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+                <strong>🤖 Chef's Recommendation:</strong> Based on today's weather (sunny), try our refreshing Sobolo with spicy Kelewele!
+            </div>
+
+            <div class="menu-filters">
+                <button class="filter-btn active" onclick="filterMenu('all')">All Items</button>
+                <button class="filter-btn" onclick="filterMenu('available')">Available Now</button>
+                <button class="filter-btn" onclick="filterMenu('spicy')">Spicy 🌶️</button>
+                <button class="filter-btn" onclick="filterMenu('vegetarian')">Vegetarian 🥗</button>
             </div>
             
-            <div class="menu-grid">
-                <div class="menu-item">
-                    <div class="menu-image">
-                        🍚
-                        <div class="popularity-badge">Most Popular</div>
-                    </div>
-                    <div class="menu-content">
-                        <h3>Jollof Rice</h3>
-                        <p>Traditional Ghanaian jollof rice with chicken and vegetables. The perfect comfort food that reminds you of home.</p>
-                        <div class="price-row">
-                            <div class="price">GH₵ 25.00</div>
-                            <div class="loyalty-points">+25 pts</div>
-                        </div>
-                        <button class="add-btn" onclick="addToCart('Jollof Rice', 25)">Add to Cart</button>
-                    </div>
-                </div>
+            <div class="menu-grid" id="menuGrid">
+                <!-- Menu items will be loaded here -->
+            </div>
+        </div>
 
-                <div class="menu-item">
-                    <div class="menu-image">
-                        🐟
-                        <div class="popularity-badge">Chef's Special</div>
-                    </div>
-                    <div class="menu-content">
-                        <h3>Banku with Tilapia</h3>
-                        <p>Fresh banku served with perfectly grilled tilapia and our signature spicy pepper sauce.</p>
-                        <div class="price-row">
-                            <div class="price">GH₵ 35.00</div>
-                            <div class="loyalty-points">+35 pts</div>
-                        </div>
-                        <button class="add-btn" onclick="addToCart('Banku with Tilapia', 35)">Add to Cart</button>
-                    </div>
-                </div>
+        <!-- Combos Section -->
+        <div id="combos" class="section">
+            <h2>🍱 Value Combo Meals</h2>
+            <p style="color: var(--gray-500); margin-bottom: 20px;">Save money with our delicious combo packages!</p>
+            
+            <div class="menu-grid" id="combosGrid">
+                <!-- Combo meals will be loaded here -->
+            </div>
+        </div>
 
-                <div class="menu-item">
-                    <div class="menu-image">
-                        🍛
-                        <div class="popularity-badge">Best Value</div>
-                    </div>
-                    <div class="menu-content">
-                        <h3>Waakye</h3>
-                        <p>Rice and beans with your choice of protein and traditional sides. A complete meal in one plate.</p>
-                        <div class="price-row">
-                            <div class="price">GH₵ 20.00</div>
-                            <div class="loyalty-points">+20 pts</div>
-                        </div>
-                        <button class="add-btn" onclick="addToCart('Waakye', 20)">Add to Cart</button>
-                    </div>
-                </div>
-
-                <div class="menu-item">
-                    <div class="menu-image">
-                        🍲
-                        <div class="popularity-badge">Traditional</div>
-                    </div>
-                    <div class="menu-content">
-                        <h3>Fufu with Light Soup</h3>
-                        <p>Traditional fufu with our aromatic goat meat light soup. A taste of authentic Ghanaian culture.</p>
-                        <div class="price-row">
-                            <div class="price">GH₵ 30.00</div>
-                            <div class="loyalty-points">+30 pts</div>
-                        </div>
-                        <button class="add-btn" onclick="addToCart('Fufu with Light Soup', 30)">Add to Cart</button>
-                    </div>
-                </div>
-
-                <div class="menu-item">
-                    <div class="menu-image">
-                        🍌
-                        <div class="popularity-badge">Trending</div>
-                    </div>
-                    <div class="menu-content">
-                        <h3>Kelewele</h3>
-                        <p>Spiced fried plantain cubes with ginger and pepper. Perfect as a side or healthy snack.</p>
-                        <div class="price-row">
-                            <div class="price">GH₵ 15.00</div>
-                            <div class="loyalty-points">+15 pts</div>
-                        </div>
-                        <button class="add-btn" onclick="addToCart('Kelewele', 15)">Add to Cart</button>
-                    </div>
-                </div>
-
-                <div class="menu-item">
-                    <div class="menu-image">
-                        🧃
-                        <div class="popularity-badge">Refreshing</div>
-                    </div>
-                    <div class="menu-content">
-                        <h3>Sobolo</h3>
-                        <p>Refreshing hibiscus drink with ginger and pineapple. The perfect complement to spicy Ghanaian food.</p>
-                        <div class="price-row">
-                            <div class="price">GH₵ 8.00</div>
-                            <div class="loyalty-points">+8 pts</div>
-                        </div>
-                        <button class="add-btn" onclick="addToCart('Sobolo', 8)">Add to Cart</button>
-                    </div>
-                </div>
+        <!-- Daily Specials Section -->
+        <div id="specials" class="section">
+            <h2>⭐ Today's Specials</h2>
+            <p style="color: var(--gray-500); margin-bottom: 20px;">Limited time offers - available until sold out!</p>
+            
+            <div class="menu-grid" id="specialsGrid">
+                <!-- Special items will be loaded here -->
             </div>
         </div>
 
@@ -609,163 +708,48 @@
         <div id="track" class="section">
             <h2>📍 Track Your Order</h2>
             
-            <div class="info-card">
-                <h3>🎯 Demo Order Tracking</h3>
-                <p style="margin: 10px 0;">Try our order tracking with these demo credentials:</p>
-                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
-                    <strong>Order Number:</strong> 1001<br>
-                    <strong>Phone:</strong> +233245678901
-                </div>
+            <div style="background: var(--success); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <h4>🎯 Demo Tracking</h4>
+                <p>Order #1001 • Phone: +233245678901</p>
             </div>
 
-            <div class="form-section">
-                <div class="form-group">
-                    <label for="orderNum">Order Number</label>
-                    <input type="text" id="orderNum" placeholder="Enter your order number (e.g., 1001)">
-                </div>
-                <div class="form-group">
-                    <label for="phoneNum">Phone Number</label>
-                    <input type="tel" id="phoneNum" placeholder="Enter your phone number">
-                </div>
-                <button class="btn" onclick="trackOrder()">📍 Track My Order</button>
+            <div class="form-group">
+                <label for="trackOrderNum">Order Number</label>
+                <input type="text" id="trackOrderNum" placeholder="Enter your order number">
             </div>
+            <div class="form-group">
+                <label for="trackPhone">Phone Number</label>
+                <input type="tel" id="trackPhone" placeholder="Enter your phone number">
+            </div>
+            <button class="btn" onclick="trackOrder()">📍 Track My Order</button>
 
-            <div id="trackResult" style="display: none;"></div>
+            <div id="trackingResult" style="display: none; margin-top: 20px;"></div>
         </div>
 
-        <!-- About Section -->
-        <div id="about" class="section">
-            <h2>🇬🇭 About Akwaaba Restaurant</h2>
+        <!-- Group Order Section -->
+        <div id="group" class="section">
+            <h2>👥 Group Order</h2>
+            <p style="color: var(--gray-500); margin-bottom: 20px;">Let multiple people order to the same table and split the bill!</p>
             
-            <div style="font-size: 1.2rem; line-height: 1.8; margin-bottom: 30px;">
-                <p>Welcome to Akwaaba Restaurant - Ghana's most innovative dining experience! We're revolutionizing how Ghanaians experience food by combining our rich culinary heritage with cutting-edge technology.</p>
+            <div class="form-group">
+                <label for="tableNum">Table Number</label>
+                <input type="number" id="tableNum" placeholder="Enter your table number" min="1" max="50">
             </div>
+            <button class="btn btn-success" onclick="startGroupOrder()">🚀 Start Group Order</button>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-number">50,000+</span>
-                    <div class="stat-label">Happy Customers</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number">4.8⭐</span>
-                    <div class="stat-label">Average Rating</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number">25+</span>
-                    <div class="stat-label">Authentic Dishes</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number">12min</span>
-                    <div class="stat-label">Average Wait Time</div>
-                </div>
-            </div>
-
-            <div class="info-card">
-                <h3>🌟 Why Choose Akwaaba Restaurant?</h3>
-                <div style="text-align: left; margin-top: 20px;">
-                    <p>✅ <strong>QR Code Ordering</strong> - No waiting for servers</p>
-                    <p>✅ <strong>Mobile Money Payment</strong> - Pay with MTN, AirtelTigo, Vodafone</p>
-                    <p>✅ <strong>Real-time Tracking</strong> - Know exactly when your food is ready</p>
-                    <p>✅ <strong>Loyalty Rewards</strong> - Earn points with every order</p>
-                    <p>✅ <strong>Multi-language Support</strong> - Order in English, Twi, Ga, or Ewe</p>
-                    <p>✅ <strong>Fresh Ingredients</strong> - Sourced daily from local markets</p>
-                </div>
-            </div>
-
-            <div style="background: white; padding: 30px; border-radius: 15px; margin: 30px 0;">
-                <h3 style="color: var(--gray-800); margin-bottom: 20px;">📍 Visit Us</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                    <div>
-                        <h4 style="color: var(--ghana-red); margin-bottom: 10px;">🕐 Hours</h4>
-                        <p>Monday - Sunday<br>10:00 AM - 10:00 PM</p>
-                    </div>
-                    <div>
-                        <h4 style="color: var(--ghana-red); margin-bottom: 10px;">📍 Location</h4>
-                        <p>123 Liberation Road<br>Accra Central, Ghana</p>
-                    </div>
-                    <div>
-                        <h4 style="color: var(--ghana-red); margin-bottom: 10px;">📞 Contact</h4>
-                        <p>+233 20 123 4567<br>hello@akwaabarestaurant.com</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Admin Section -->
-        <div id="admin" class="section">
-            <h2>👨‍🍳 Restaurant Admin Dashboard</h2>
-            
-            <div id="adminLogin">
-                <div class="form-section">
-                    <div class="form-group">
-                        <label for="adminPass">Admin Password</label>
-                        <input type="password" id="adminPass" placeholder="Enter admin password">
-                    </div>
-                    <button class="btn" onclick="adminLogin()">🔐 Access Kitchen Dashboard</button>
-                    <div class="success-message" style="margin-top: 15px;">
-                        <strong>Demo Password:</strong> kitchen123
-                    </div>
-                </div>
-            </div>
-
-            <div id="adminPanel" style="display: none;">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <span class="stat-number">47</span>
-                        <div class="stat-label">Orders Today</div>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">GH₵1,850</span>
-                        <div class="stat-label">Revenue Today</div>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">12min</span>
-                        <div class="stat-label">Avg Prep Time</div>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-number">4.8⭐</span>
-                        <div class="stat-label">Customer Rating</div>
-                    </div>
-                </div>
-
-                <div class="error-message">
-                    <strong>⚠️ Inventory Alert:</strong> Palm nuts running low (5 portions left). Red beans need restocking.
-                </div>
-
-                <div class="info-card">
-                    <h3>🔥 Live Kitchen Status</h3>
-                    <p>All systems operational. Kitchen staff performing excellently!</p>
-                </div>
-
-                <div style="background: white; padding: 25px; border-radius: 15px; margin: 20px 0;">
-                    <h3 style="margin-bottom: 20px;">📊 Today's Popular Items</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                        <div style="text-align: center; padding: 15px;">
-                            <div style="font-size: 3rem;">🍚</div>
-                            <strong>Jollof Rice</strong><br>
-                            <small style="color: var(--gray-500);">23 orders today</small>
-                        </div>
-                        <div style="text-align: center; padding: 15px;">
-                            <div style="font-size: 3rem;">🐟</div>
-                            <strong>Banku & Tilapia</strong><br>
-                            <small style="color: var(--gray-500);">18 orders today</small>
-                        </div>
-                        <div style="text-align: center; padding: 15px;">
-                            <div style="font-size: 3rem;">🧃</div>
-                            <strong>Sobolo</strong><br>
-                            <small style="color: var(--gray-500);">31 orders today</small>
-                        </div>
-                    </div>
-                </div>
+            <div id="groupOrderStatus" style="display: none; margin-top: 20px;">
+                <!-- Group order status will show here -->
             </div>
         </div>
     </div>
 
-    <!-- Floating Cart -->
+    <!-- Floating Action Buttons -->
     <button class="cart-floating" onclick="showCart()">
         🛒
         <span class="cart-badge" id="cartCount">0</span>
     </button>
+
+    <button class="group-btn" onclick="showSection('group')" title="Group Order">👥</button>
 
     <!-- Cart Modal -->
     <div id="cartModal" class="modal">
@@ -773,162 +757,808 @@
             <button class="close-btn" onclick="closeCart()">&times;</button>
             <h2>🛒 Your Order</h2>
             <div id="cartItems"></div>
-            <div id="cartTotal" style="font-size: 1.3rem; font-weight: bold; text-align: center; margin: 20px 0; padding: 20px; background: var(--gray-100); border-radius: 10px;">
+            <div id="cartTotal" style="font-size: 1.2rem; font-weight: bold; text-align: center; margin: 20px 0; padding: 15px; background: var(--gray-100); border-radius: 10px;">
                 Total: GH₵ 0.00
             </div>
-            <button class="btn btn-success" onclick="checkout()" id="checkoutBtn" style="display: none;">💰 Proceed to Checkout</button>
+            
+            <div class="split-bill" id="splitBillSection" style="display: none;">
+                <h4>💰 Split Bill Options</h4>
+                <div class="split-options">
+                    <button class="split-btn" onclick="splitEvenly()">Split Evenly</button>
+                    <button class="split-btn" onclick="splitByItem()">Split by Item</button>
+                    <button class="split-btn" onclick="payAll()">I'll Pay All</button>
+                </div>
+                <div id="splitDetails" style="margin-top: 15px;"></div>
+            </div>
+            
+            <button class="btn btn-success" onclick="proceedToCheckout()" id="checkoutBtn" style="display: none;">💳 Proceed to Checkout</button>
         </div>
     </div>
 
+    <!-- Checkout Modal -->
+    <div id="checkoutModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeCheckout()">&times;</button>
+            <h2>💳 Complete Your Order</h2>
+            
+            <div class="form-group">
+                <label for="customerName">Your Name *</label>
+                <input type="text" id="customerName" required>
+            </div>
+            <div class="form-group">
+                <label for="customerPhone">Phone Number *</label>
+                <input type="tel" id="customerPhone" required>
+            </div>
+            <div class="form-group">
+                <label for="tableNumber">Table Number *</label>
+                <input type="number" id="tableNumber" required min="1" max="50">
+            </div>
+            
+            <h3>💳 Payment Method</h3>
+            <div class="payment-methods">
+                <div class="payment-method selected" onclick="selectPayment('mtn')">
+                    <h4>📱 MTN MoMo</h4>
+                    <small>Most Popular</small>
+                </div>
+                <div class="payment-method" onclick="selectPayment('vodafone')">
+                    <h4>📱 Vodafone Cash</h4>
+                    <small>Instant</small>
+                </div>
+                <div class="payment-method" onclick="selectPayment('card')">
+                    <h4>💳 Card Payment</h4>
+                    <small>Visa/Mastercard</small>
+                </div>
+                <div class="payment-method" onclick="selectPayment('cash')">
+                    <h4>💰 Pay on Delivery</h4>
+                    <small>Cash</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="specialInstructions">Special Instructions</label>
+                <textarea id="specialInstructions" rows="3" placeholder="Any special requests..."></textarea>
+            </div>
+            
+            <div id="finalTotal" style="font-size: 1.3rem; font-weight: bold; text-align: center; margin: 20px 0; padding: 20px; background: var(--success); color: white; border-radius: 10px;">
+                Total: GH₵ 0.00
+            </div>
+            
+            <button class="btn btn-success" onclick="placeOrder()" style="width: 100%;">🚀 Place Order</button>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Offline Indicator -->
+    <div id="offlineIndicator" class="offline-indicator">📶 Offline Mode - Orders saved locally</div>
+
     <script>
-        // Simple, clean JavaScript without complex features
+        // Global Variables
         let cart = {};
-        let cartTotal = 0;
-        
-        function addToCart(itemName, price) {
-            if (cart[itemName]) {
-                cart[itemName].quantity++;
+        let groupMembers = {};
+        let selectedPayment = 'mtn';
+        let loyaltyPoints = parseInt(localStorage.getItem('loyaltyPoints') || '1250');
+        let isGroupOrder = false;
+        let currentTable = null;
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+
+        // Install App Button
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').style.display = 'block';
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((result) => {
+                    if (result.outcome === 'accepted') {
+                        showNotification('App installed successfully! 📱', 'success');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('installBtn').style.display = 'none';
+                });
+            }
+        }
+
+        // Menu Data with Enhanced Features
+        const menuItems = [
+            {
+                id: 1,
+                name: "Jollof Rice",
+                description: "Traditional Ghanaian jollof rice with chicken and vegetables",
+                basePrice: 25.00,
+                image: "🍚",
+                category: "mains",
+                available: true,
+                isSpicy: true,
+                isVegetarian: false,
+                portions: {small: 20.00, regular: 25.00, large: 30.00},
+                spiceLevels: {mild: 0, medium: 0, hot: 2, extra: 5},
+                ingredients: ["Rice", "Chicken", "Tomatoes", "Onions", "Spices"],
+                points: 25
+            },
+            {
+                id: 2,
+                name: "Banku with Tilapia",
+                description: "Fresh banku served with grilled tilapia and pepper sauce",
+                basePrice: 35.00,
+                image: "🐟",
+                category: "mains",
+                available: true,
+                isSpicy: true,
+                isVegetarian: false,
+                portions: {small: 28.00, regular: 35.00, large: 42.00},
+                spiceLevels: {mild: 0, medium: 0, hot: 3, extra: 6},
+                ingredients: ["Banku", "Fresh Tilapia", "Pepper Sauce", "Onions"],
+                points: 35
+            },
+            {
+                id: 3,
+                name: "Waakye",
+                description: "Rice and beans with your choice of protein and sides",
+                basePrice: 20.00,
+                image: "🍛",
+                category: "mains",
+                available: true,
+                isSpicy: false,
+                isVegetarian: true,
+                portions: {small: 15.00, regular: 20.00, large: 25.00},
+                spiceLevels: {mild: 0, medium: 0, hot: 0, extra: 0},
+                ingredients: ["Rice", "Black-eyed Beans", "Vegetables", "Traditional Leaves"],
+                points: 20
+            },
+            {
+                id: 4,
+                name: "Kelewele",
+                description: "Spiced fried plantain cubes with ginger and pepper",
+                basePrice: 15.00,
+                image: "🍌",
+                category: "sides",
+                available: false, // Sold out
+                isSpicy: true,
+                isVegetarian: true,
+                portions: {small: 10.00, regular: 15.00, large: 20.00},
+                spiceLevels: {mild: 1, medium: 2, hot: 4, extra: 7},
+                ingredients: ["Plantain", "Ginger", "Pepper", "Spices"],
+                points: 15
+            },
+            {
+                id: 5,
+                name: "Sobolo",
+                description: "Refreshing hibiscus drink with ginger and pineapple",
+                basePrice: 8.00,
+                image: "🧃",
+                category: "drinks",
+                available: true,
+                isSpicy: false,
+                isVegetarian: true,
+                portions: {small: 6.00, regular: 8.00, large: 10.00},
+                spiceLevels: {mild: 0, medium: 0, hot: 0, extra: 0},
+                ingredients: ["Hibiscus", "Ginger", "Pineapple", "Natural Sweetener"],
+                points: 8
+            },
+            {
+                id: 6,
+                name: "Palm Nut Soup",
+                description: "Rich palm nut soup with your choice of meat or fish",
+                basePrice: 28.00,
+                image: "🥥",
+                category: "soups",
+                available: true,
+                isSpicy: false,
+                isVegetarian: false,
+                portions: {small: 22.00, regular: 28.00, large: 35.00},
+                spiceLevels: {mild: 0, medium: 1, hot: 2, extra: 4},
+                ingredients: ["Palm Nuts", "Meat/Fish", "Vegetables", "Traditional Spices"],
+                points: 28
+            }
+        ];
+
+        const comboMeals = [
+            {
+                id: 'combo1',
+                name: "Jollof & Sobolo Combo",
+                description: "Jollof Rice + Sobolo drink",
+                items: ["Jollof Rice", "Sobolo"],
+                regularPrice: 33.00,
+                comboPrice: 28.00,
+                savings: 5.00,
+                image: "🍚🧃",
+                available: true
+            },
+            {
+                id: 'combo2',
+                name: "Banku Special Combo",
+                description: "Banku with Tilapia + Kelewele + Sobolo",
+                items: ["Banku with Tilapia", "Kelewele", "Sobolo"],
+                regularPrice: 58.00,
+                comboPrice: 49.00,
+                savings: 9.00,
+                image: "🐟🍌🧃",
+                available: false // Kelewele sold out
+            },
+            {
+                id: 'combo3',
+                name: "Vegetarian Delight",
+                description: "Waakye + Kelewele + Sobolo",
+                items: ["Waakye", "Kelewele", "Sobolo"],
+                regularPrice: 43.00,
+                comboPrice: 36.00,
+                savings: 7.00,
+                image: "🍛🍌🧃",
+                available: false // Kelewele sold out
+            }
+        ];
+
+        const dailySpecials = [
+            {
+                id: 'special1',
+                name: "Chef's Special Banku",
+                description: "Extra large Banku with Tilapia - Today only!",
+                regularPrice: 42.00,
+                specialPrice: 35.00,
+                image: "🐟",
+                availableUntil: "6:00 PM",
+                remaining: 12
+            },
+            {
+                id: 'special2',
+                name: "Double Jollof Deal",
+                description: "Two portions of Jollof Rice",
+                regularPrice: 50.00,
+                specialPrice: 40.00,
+                image: "🍚🍚",
+                availableUntil: "8:00 PM",
+                remaining: 8
+            }
+        ];
+
+        // Initialize App
+        function init() {
+            loadMenuItems();
+            loadComboMeals();
+            loadDailySpecials();
+            updateCartCount();
+            updateLoyaltyDisplay();
+            checkOnlineStatus();
+            
+            // Update queue status every 30 seconds
+            setInterval(updateQueueStatus, 30000);
+        }
+
+        function loadMenuItems(filter = 'all') {
+            const grid = document.getElementById('menuGrid');
+            let items = menuItems;
+
+            // Apply filters
+            if (filter === 'available') items = items.filter(item => item.available);
+            if (filter === 'spicy') items = items.filter(item => item.isSpicy);
+            if (filter === 'vegetarian') items = items.filter(item => item.isVegetarian);
+
+            grid.innerHTML = items.map(item => `
+                <div class="menu-item ${!item.available ? 'sold-out' : ''}" data-id="${item.id}">
+                    <div class="menu-image" style="background: linear-gradient(45deg, #f59e0b, #d97706);">
+                        <span style="font-size: 4rem;">${item.image}</span>
+                        ${item.isSpicy ? '<div class="special-badge">🌶️ Spicy</div>' : ''}
+                        ${!item.available ? '<div class="combo-badge">Sold Out</div>' : ''}
+                    </div>
+                    <div class="menu-content">
+                        <h3>${item.name}</h3>
+                        <p>${item.description}</p>
+                        <small style="color: var(--gray-500);">Ingredients: ${item.ingredients.join(', ')}</small>
+                        
+                        <div class="options-row">
+                            <div class="option-group">
+                                <label>Portion Size</label>
+                                <select onchange="updateItemPrice(${item.id}, this)">
+                                    <option value="small">Small - GH₵ ${item.portions.small.toFixed(2)}</option>
+                                    <option value="regular" selected>Regular - GH₵ ${item.portions.regular.toFixed(2)}</option>
+                                    <option value="large">Large - GH₵ ${item.portions.large.toFixed(2)}</option>
+                                </select>
+                            </div>
+                            ${item.isSpicy ? `
+                            <div class="option-group">
+                                <label>Spice Level</label>
+                                <select>
+                                    <option value="mild">😊 Mild</option>
+                                    <option value="medium" selected>🌶️ Medium</option>
+                                    <option value="hot">🔥 Hot</option>
+                                    <option value="extra">🔥🔥 Extra Hot</option>
+                                </select>
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="price-row">
+                            <div class="price-info">
+                                <div class="price" id="price-${item.id}">GH₵ ${item.basePrice.toFixed(2)}</div>
+                            </div>
+                            <div class="loyalty-points">+${item.points} pts</div>
+                        </div>
+                        
+                        <button class="add-btn" onclick="addToCart(${item.id})" ${!item.available ? 'disabled' : ''}>
+                            ${item.available ? 'Add to Cart' : 'Sold Out'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadComboMeals() {
+            const grid = document.getElementById('combosGrid');
+            grid.innerHTML = comboMeals.map(combo => `
+                <div class="menu-item ${!combo.available ? 'sold-out' : ''}">
+                    <div class="menu-image" style="background: linear-gradient(45deg, #22c55e, #16a34a);">
+                        <span style="font-size: 3rem;">${combo.image}</span>
+                        <div class="combo-badge">COMBO DEAL</div>
+                    </div>
+                    <div class="menu-content">
+                        <h3>${combo.name}</h3>
+                        <p>${combo.description}</p>
+                        <p><strong>Includes:</strong> ${combo.items.join(' + ')}</p>
+                        
+                        <div class="price-row">
+                            <div class="price-info">
+                                <div class="combo-price">Regular: GH₵ ${combo.regularPrice.toFixed(2)}</div>
+                                <div class="price">Combo: GH₵ ${combo.comboPrice.toFixed(2)}</div>
+                                <small style="color: var(--success);">You save GH₵ ${combo.savings.toFixed(2)}</small>
+                            </div>
+                            <div class="loyalty-points">+${Math.floor(combo.comboPrice)} pts</div>
+                        </div>
+                        
+                        <button class="add-btn" onclick="addComboToCart('${combo.id}')" ${!combo.available ? 'disabled' : ''}>
+                            ${combo.available ? 'Add Combo' : 'Currently Unavailable'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadDailySpecials() {
+            const grid = document.getElementById('specialsGrid');
+            grid.innerHTML = dailySpecials.map(special => `
+                <div class="menu-item">
+                    <div class="menu-image" style="background: linear-gradient(45deg, #dc2626, #b91c1c);">
+                        <span style="font-size: 4rem;">${special.image}</span>
+                        <div class="special-badge">TODAY ONLY</div>
+                    </div>
+                    <div class="menu-content">
+                        <h3>${special.name}</h3>
+                        <p>${special.description}</p>
+                        <p style="color: var(--warning); font-weight: bold;">⏰ Available until ${special.availableUntil}</p>
+                        <p style="color: var(--error); font-weight: bold;">🔥 Only ${special.remaining} left!</p>
+                        
+                        <div class="price-row">
+                            <div class="price-info">
+                                <div class="combo-price">Regular: GH₵ ${special.regularPrice.toFixed(2)}</div>
+                                <div class="price">Special: GH₵ ${special.specialPrice.toFixed(2)}</div>
+                                <small style="color: var(--success);">You save GH₵ ${(special.regularPrice - special.specialPrice).toFixed(2)}</small>
+                            </div>
+                            <div class="loyalty-points">+${Math.floor(special.specialPrice)} pts</div>
+                        </div>
+                        
+                        <button class="add-btn" onclick="addSpecialToCart('${special.id}')">
+                            Add Special Deal
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateItemPrice(itemId, selectElement) {
+            const item = menuItems.find(i => i.id === itemId);
+            const portion = selectElement.value;
+            const newPrice = item.portions[portion];
+            document.getElementById(`price-${itemId}`).textContent = `GH₵ ${newPrice.toFixed(2)}`;
+        }
+
+        function filterMenu(filter) {
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Reload menu with filter
+            loadMenuItems(filter);
+        }
+
+        function addToCart(itemId) {
+            const item = menuItems.find(i => i.id === itemId);
+            if (!item || !item.available) return;
+
+            // Get selected options
+            const itemElement = document.querySelector(`[data-id="${itemId}"]`);
+            const portionSelect = itemElement.querySelector('select');
+            const spiceSelect = itemElement.querySelectorAll('select')[1];
+            
+            const portion = portionSelect.value;
+            const spiceLevel = spiceSelect ? spiceSelect.value : 'mild';
+            const price = item.portions[portion];
+            
+            const cartKey = `${item.name}-${portion}-${spiceLevel}`;
+            
+            if (cart[cartKey]) {
+                cart[cartKey].quantity++;
             } else {
-                cart[itemName] = { name: itemName, price: price, quantity: 1 };
+                cart[cartKey] = {
+                    id: item.id,
+                    name: item.name,
+                    price: price,
+                    portion: portion,
+                    spiceLevel: spiceLevel,
+                    quantity: 1,
+                    points: item.points,
+                    customInstructions: ""
+                };
             }
             
             updateCartCount();
+            showNotification(`${item.name} (${portion}) added to cart! 🛒`, 'success');
             
             // Visual feedback
-            event.target.style.background = 'linear-gradient(45deg, #16a34a, var(--ghana-green))';
-            event.target.textContent = '✅ Added!';
-            
-            setTimeout(function() {
-                event.target.style.background = 'linear-gradient(45deg, var(--primary-blue), #1d4ed8)';
-                event.target.textContent = 'Add to Cart';
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.style.background = 'linear-gradient(45deg, var(--success), #059669)';
+            btn.textContent = '✅ Added!';
+            setTimeout(() => {
+                btn.style.background = 'linear-gradient(45deg, var(--primary-blue), #1d4ed8)';
+                btn.textContent = originalText;
             }, 1500);
         }
-        
-        function updateCartCount() {
-            let count = 0;
-            for (let item in cart) {
-                count += cart[item].quantity;
+
+        function addComboToCart(comboId) {
+            const combo = comboMeals.find(c => c.id === comboId);
+            if (!combo || !combo.available) return;
+
+            const cartKey = `combo-${comboId}`;
+            
+            if (cart[cartKey]) {
+                cart[cartKey].quantity++;
+            } else {
+                cart[cartKey] = {
+                    id: comboId,
+                    name: combo.name,
+                    price: combo.comboPrice,
+                    type: 'combo',
+                    items: combo.items,
+                    quantity: 1,
+                    points: Math.floor(combo.comboPrice)
+                };
             }
+            
+            updateCartCount();
+            showNotification(`${combo.name} combo added! You saved GH₵ ${combo.savings.toFixed(2)} 💰`, 'success');
+        }
+
+        function addSpecialToCart(specialId) {
+            const special = dailySpecials.find(s => s.id === specialId);
+            if (!special) return;
+
+            const cartKey = `special-${specialId}`;
+            
+            if (cart[cartKey]) {
+                cart[cartKey].quantity++;
+            } else {
+                cart[cartKey] = {
+                    id: specialId,
+                    name: special.name,
+                    price: special.specialPrice,
+                    type: 'special',
+                    quantity: 1,
+                    points: Math.floor(special.specialPrice)
+                };
+            }
+            
+            updateCartCount();
+            showNotification(`${special.name} added! You saved GH₵ ${(special.regularPrice - special.specialPrice).toFixed(2)} 🎉`, 'success');
+        }
+
+        function updateCartCount() {
+            const count = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
             document.getElementById('cartCount').textContent = count;
             document.getElementById('cartCount').style.display = count > 0 ? 'flex' : 'none';
         }
-        
+
+        function updateLoyaltyDisplay() {
+            document.getElementById('loyaltyPoints').textContent = `👑 VIP - ${loyaltyPoints} pts`;
+        }
+
         function showCart() {
-            let cartItems = document.getElementById('cartItems');
+            const modal = document.getElementById('cartModal');
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            const splitBillSection = document.getElementById('splitBillSection');
+            
             let total = 0;
             cartItems.innerHTML = '';
-            
+
             if (Object.keys(cart).length === 0) {
                 cartItems.innerHTML = '<p style="text-align: center; color: var(--gray-500); padding: 20px;">Your cart is empty</p>';
                 document.getElementById('checkoutBtn').style.display = 'none';
+                splitBillSection.style.display = 'none';
             } else {
-                for (let item in cart) {
-                    let itemTotal = cart[item].price * cart[item].quantity;
+                Object.entries(cart).forEach(([key, item]) => {
+                    const itemTotal = item.price * item.quantity;
                     total += itemTotal;
                     
-                    cartItems.innerHTML += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--gray-200);"><div><strong>' + cart[item].name + '</strong><br><small>GH₵ ' + cart[item].price.toFixed(2) + ' each</small></div><div><button onclick="changeQuantity(\'' + item + '\', -1)" style="background: #ef4444; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; margin-right: 10px;">-</button><span style="margin: 0 10px; font-weight: bold;">' + cart[item].quantity + '</span><button onclick="changeQuantity(\'' + item + '\', 1)" style="background: #22c55e; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; margin-left: 10px;">+</button></div></div>';
-                }
+                    cartItems.innerHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--gray-200);">
+                            <div>
+                                <strong>${item.name}</strong><br>
+                                <small>
+                                    ${item.portion ? `Size: ${item.portion}` : ''}
+                                    ${item.spiceLevel ? ` • Spice: ${item.spiceLevel}` : ''}
+                                    ${item.type === 'combo' ? ` • ${item.items.join(' + ')}` : ''}
+                                </small><br>
+                                <small style="color: var(--gray-500);">GH₵ ${item.price.toFixed(2)} each</small>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <button onclick="changeQuantity('${key}', -1)" style="background: var(--error); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">−</button>
+                                <span style="font-weight: bold; min-width: 20px; text-align: center;">${item.quantity}</span>
+                                <button onclick="changeQuantity('${key}', 1)" style="background: var(--success); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">+</button>
+                                <span style="margin-left: 10px; font-weight: bold;">GH₵ ${itemTotal.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `;
+                });
                 document.getElementById('checkoutBtn').style.display = 'block';
+                splitBillSection.style.display = isGroupOrder ? 'block' : 'none';
             }
-            
-            document.getElementById('cartTotal').innerHTML = 'Total: GH₵ ' + total.toFixed(2);
-            document.getElementById('cartModal').style.display = 'block';
+
+            cartTotal.innerHTML = `Total: GH₵ ${total.toFixed(2)}<br><small style="color: var(--success);">You'll earn ${Math.floor(total)} loyalty points!</small>`;
+            modal.style.display = 'block';
         }
-        
-        function changeQuantity(itemName, change) {
-            cart[itemName].quantity += change;
-            if (cart[itemName].quantity <= 0) {
-                delete cart[itemName];
+
+        function changeQuantity(cartKey, change) {
+            if (cart[cartKey]) {
+                cart[cartKey].quantity += change;
+                if (cart[cartKey].quantity <= 0) {
+                    delete cart[cartKey];
+                }
+                updateCartCount();
+                showCart(); // Refresh cart display
             }
-            updateCartCount();
-            showCart();
         }
-        
+
         function closeCart() {
             document.getElementById('cartModal').style.display = 'none';
         }
-        
-        function checkout() {
-            if (Object.keys(cart).length === 0) return;
+
+        function proceedToCheckout() {
+            closeCart();
+            const checkoutModal = document.getElementById('checkoutModal');
+            const finalTotal = document.getElementById('finalTotal');
             
-            alert('🎉 Order placed successfully!\n\nYour order has been sent to the kitchen.\nEstimated preparation time: 15 minutes.\n\nThank you for choosing Akwaaba Restaurant! 🇬🇭');
+            const total = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const points = Object.values(cart).reduce((sum, item) => sum + ((item.points || 0) * item.quantity), 0);
             
+            finalTotal.innerHTML = `Total: GH₵ ${total.toFixed(2)}<br><small>You'll earn ${points} loyalty points!</small>`;
+            checkoutModal.style.display = 'block';
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkoutModal').style.display = 'none';
+        }
+
+        function selectPayment(method) {
+            selectedPayment = method;
+            document.querySelectorAll('.payment-method').forEach(pm => pm.classList.remove('selected'));
+            event.target.closest('.payment-method').classList.add('selected');
+        }
+
+        function placeOrder() {
+            const name = document.getElementById('customerName').value;
+            const phone = document.getElementById('customerPhone').value;
+            const table = document.getElementById('tableNumber').value;
+            const instructions = document.getElementById('specialInstructions').value;
+
+            if (!name || !phone || !table) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            const orderData = {
+                id: Math.floor(Math.random() * 10000) + 1000,
+                customerName: name,
+                customerPhone: phone,
+                tableNumber: table,
+                items: cart,
+                total: Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                paymentMethod: getPaymentMethodName(selectedPayment),
+                specialInstructions: instructions,
+                timestamp: new Date(),
+                status: 'new'
+            };
+
+            // Save order to localStorage (acts as database)
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(orderData);
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            // Update loyalty points
+            const earnedPoints = Math.floor(orderData.total);
+            loyaltyPoints += earnedPoints;
+            localStorage.setItem('loyaltyPoints', loyaltyPoints);
+            updateLoyaltyDisplay();
+
             // Clear cart
             cart = {};
             updateCartCount();
-            closeCart();
-        }
-        
-        function showSection(sectionName) {
-            // Hide all sections
-            let sections = document.querySelectorAll('.section');
-            for (let i = 0; i < sections.length; i++) {
-                sections[i].classList.remove('active');
-            }
+            closeCheckout();
+
+            // Show success
+            showNotification(`Order #${orderData.id} placed successfully! 🎉`, 'success');
             
-            // Remove active from all nav buttons
-            let navBtns = document.querySelectorAll('.nav-btn');
-            for (let i = 0; i < navBtns.length; i++) {
-                navBtns[i].classList.remove('active');
-            }
-            
-            // Show selected section
-            document.getElementById(sectionName).classList.add('active');
-            event.target.classList.add('active');
+            setTimeout(() => {
+                alert(`🎉 Order Confirmation\n\nOrder #${orderData.id}\n💰 Total: GH₵ ${orderData.total.toFixed(2)}\n📱 Payment: ${orderData.paymentMethod}\n🏆 Points earned: ${earnedPoints}\n⏰ Estimated time: 15-20 minutes\n\nThank you for choosing Akwaaba Restaurant! 🇬🇭`);
+            }, 500);
         }
-        
+
+        function getPaymentMethodName(method) {
+            const names = {
+                mtn: 'MTN Mobile Money',
+                vodafone: 'Vodafone Cash',
+                card: 'Card Payment',
+                cash: 'Pay on Delivery'
+            };
+            return names[method] || 'Unknown';
+        }
+
         function trackOrder() {
-            let orderNum = document.getElementById('orderNum').value;
-            let phoneNum = document.getElementById('phoneNum').value;
-            let result = document.getElementById('trackResult');
-            
-            if (!orderNum || !phoneNum) {
-                result.innerHTML = '<div class="error-message">Please enter both order number and phone number</div>';
-                result.style.display = 'block';
+            const orderNum = document.getElementById('trackOrderNum').value;
+            const phone = document.getElementById('trackPhone').value;
+            const result = document.getElementById('trackingResult');
+
+            if (!orderNum || !phone) {
+                showNotification('Please enter both order number and phone number', 'error');
                 return;
             }
-            
-            if (orderNum === '1001' && phoneNum === '+233245678901') {
-                result.innerHTML = '<div class="success-message"><h3>✅ Order #1001 Found!</h3><div style="margin: 15px 0;"><div style="display: flex; align-items: center; margin: 10px 0;"><div style="width: 40px; height: 40px; background: var(--ghana-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; margin-right: 15px;">✅</div><div><strong>Being Prepared</strong><br><small>Our chefs are cooking your delicious meal</small></div></div></div><div style="background: var(--primary-blue); color: white; padding: 15px; border-radius: 10px; text-align: center;"><strong>⏰ Estimated wait time: 8 minutes</strong></div><div style="margin-top: 15px;"><strong>Order Details:</strong><br>📍 Table 5 • 👤 Kwame Asante<br>🍽️ Jollof Rice x2, Sobolo x2<br>💰 Total: GH₵ 66.00</div></div>';
+
+            // Demo tracking
+            if (orderNum === '1001' && phone === '+233245678901') {
+                result.innerHTML = `
+                    <div style="background: var(--success); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        ✅ Order #1001 Found!
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 10px; border-left: 5px solid var(--success);">
+                        <h4>👨‍🍳 Being Prepared</h4>
+                        <p>Your delicious meal is being cooked by our expert chefs!</p>
+                        <div style="background: var(--primary-blue); color: white; padding: 10px; border-radius: 8px; text-align: center; margin: 15px 0;">
+                            <strong>⏰ Estimated wait time: 8 minutes</strong>
+                        </div>
+                        <p><strong>Order Details:</strong></p>
+                        <p>📍 Table 5 • 👤 Kwame Asante</p>
+                        <p>🍽️ Jollof Rice (Regular) x2, Sobolo (Regular) x1</p>
+                        <p>💰 Total: GH₵ 58.00 • 💳 MTN Mobile Money</p>
+                    </div>
+                `;
             } else {
-                result.innerHTML = '<div class="error-message"><strong>❌ Order not found</strong><br>Please check your order number and phone number.<br><br><small>💡 Try: Order #1001 with phone +233245678901</small></div>';
+                result.innerHTML = `
+                    <div style="background: var(--error); color: white; padding: 15px; border-radius: 10px;">
+                        ❌ Order not found<br>
+                        <small>Please check your order number and phone number</small><br>
+                        <small>💡 Try demo: Order #1001, Phone +233245678901</small>
+                    </div>
+                `;
             }
             
             result.style.display = 'block';
         }
-        
-        function adminLogin() {
-            let password = document.getElementById('adminPass').value;
+
+        function startGroupOrder() {
+            const tableNum = document.getElementById('tableNum').value;
+            if (!tableNum) {
+                showNotification('Please enter a table number', 'error');
+                return;
+            }
+
+            isGroupOrder = true;
+            currentTable = tableNum;
             
-            if (password === 'kitchen123') {
-                document.getElementById('adminLogin').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('groupOrderStatus').innerHTML = `
+                <div style="background: var(--ghana-green); color: white; padding: 20px; border-radius: 10px;">
+                    <h3>🎉 Group Order Started for Table ${tableNum}!</h3>
+                    <p>Share this link with your table members:</p>
+                    <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                        <strong>akwaabarestaurant.com/group/${tableNum}</strong>
+                    </div>
+                    <p><small>Anyone can now add items to this group order!</small></p>
+                </div>
+            `;
+            document.getElementById('groupOrderStatus').style.display = 'block';
+            
+            showNotification('Group order started! Share the link with your table 👥', 'success');
+        }
+
+        function splitEvenly() {
+            const total = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const memberCount = Object.keys(groupMembers).length || 2; // Default 2 people
+            const perPerson = total / memberCount;
+            
+            document.getElementById('splitDetails').innerHTML = `
+                <div style="background: var(--gray-100); padding: 15px; border-radius: 8px;">
+                    <strong>Split Evenly Among ${memberCount} People:</strong><br>
+                    GH₵ ${perPerson.toFixed(2)} per person
+                </div>
+            `;
+        }
+
+        function splitByItem() {
+            document.getElementById('splitDetails').innerHTML = `
+                <div style="background: var(--gray-100); padding: 15px; border-radius: 8px;">
+                    <strong>Split by Individual Items:</strong><br>
+                    Each person pays for what they ordered
+                </div>
+            `;
+        }
+
+        function payAll() {
+            const total = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            document.getElementById('splitDetails').innerHTML = `
+                <div style="background: var(--ghana-gold); color: var(--gray-800); padding: 15px; border-radius: 8px;">
+                    <strong>🎉 You're paying the entire bill!</strong><br>
+                    Total: GH₵ ${total.toFixed(2)}<br>
+                    <small>Your friends will appreciate this! 🙏</small>
+                </div>
+            `;
+        }
+
+        function updateQueueStatus() {
+            const statuses = [
+                '🟢 Kitchen Status: Normal wait times • Next slot: 2:45 PM',
+                '🟡 Kitchen Status: Slightly busy • Next slot: 3:15 PM',
+                '🟢 Kitchen Status: Normal wait times • Next slot: 3:00 PM'
+            ];
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            document.getElementById('queueStatus').textContent = randomStatus;
+        }
+
+        function checkOnlineStatus() {
+            const offlineIndicator = document.getElementById('offlineIndicator');
+            
+            if (!navigator.onLine) {
+                offlineIndicator.style.display = 'block';
             } else {
-                alert('❌ Incorrect password. Try: kitchen123');
+                offlineIndicator.style.display = 'none';
             }
         }
-        
-        function toggleTheme() {
-            let body = document.body;
-            if (body.style.filter === 'invert(1)') {
-                body.style.filter = 'none';
-                event.target.textContent = '🌙';
-            } else {
-                body.style.filter = 'invert(1)';
-                event.target.textContent = '☀️';
-            }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            
+            // Remove active class from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected section and activate button
+            document.getElementById(sectionName).classList.add('active');
+            event.target.classList.add('active');
         }
-        
-        function toggleLanguage() {
-            alert('🌍 Language Options:\n\n🇬🇧 English (Current)\n🇬🇭 Twi - Coming Soon!\n🇬🇭 Ga - Coming Soon!\n🇬🇭 Ewe - Coming Soon!');
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
         }
+
+        // Initialize app when page loads
+        window.addEventListener('load', init);
         
-        function showDemo() {
-            alert('🎯 Akwaaba Restaurant Demo\n\n✅ Try adding items to cart\n✅ Test order tracking with Order #1001\n✅ Access admin panel with password: kitchen123\n✅ All features are fully functional!\n\n🇬🇭 Built with love for Ghana\'s restaurant industry!');
-        }
-        
-        // Initialize
-        updateCartCount();
+        // Online/offline detection
+        window.addEventListener('online', checkOnlineStatus);
+        window.addEventListener('offline', checkOnlineStatus);
     </script>
 </body>
 </html>
