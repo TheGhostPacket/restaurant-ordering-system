@@ -1795,7 +1795,849 @@
                                 return `
                                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--gray-200); background: var(--white); border-radius: 8px; margin-bottom: 10px;">
                                         <div>
-                                            <strong style="color: var(--text-color);">${item.name}</strong><br>
+                                    <strong style="color: var(--text-color); font-size: 1.1rem;">${stage.name}</strong><br>
+                                    <small style="color: var(--gray-500);">${stage.desc}</small>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="background: var(--gray-50); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                        <p><strong>Order Details:</strong></p>
+                        <p>📍 Table ${order.table} • 👤 ${order.customerName}</p>
+                        <p>📱 ${order.customerPhone} • 💳 ${order.paymentMethod}</p>
+                        <p><strong>Items:</strong> ${Object.values(order.items).map(item => `${item.name} x${item.quantity}`).join(', ')}</p>
+                        <p><strong>Total:</strong> GH₵ ${order.total.toFixed(2)}</p>
+                        ${order.specialInstructions ? `<p><strong>Special Instructions:</strong> ${order.specialInstructions}</p>` : ''}
+                    </div>
+                    
+                    ${order.status !== 'delivered' ? `
+                        <div style="background: var(--primary-blue); color: white; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                            <strong>⏰ Estimated ${order.status === 'ready' ? 'pickup time: Now!' : `wait time: ${Math.max(0, order.estimatedTime - Math.floor((Date.now() - order.timestamp) / 60000))} minutes`}</strong>
+                        </div>
+                    ` : `
+                        <div style="background: var(--success-emerald); color: white; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                            <strong>🎉 Order completed! Thank you for dining with us!</strong>
+                        </div>
+                    `}
+                </div>
+            `;
+            resultDiv.style.display = 'block';
+        }
+
+        function loadOrderHistory() {
+            const historyList = document.getElementById('orderHistoryList');
+            if (!historyList) return;
+            
+            if (orderHistory.length === 0) {
+                historyList.innerHTML = `
+                    <div style="background: var(--white); padding: 30px; border-radius: 12px; text-align: center; color: var(--text-color);">
+                        <h3>📋 No Order History Yet</h3>
+                        <p>Your previous orders will appear here once you place your first order!</p>
+                        <button class="btn" onclick="showSection('menu')" style="margin-top: 15px;">🍽️ Browse Menu</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            historyList.innerHTML = orderHistory.map(order => `
+                <div style="background: var(--white); padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid var(--ghana-gold);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <strong style="color: var(--text-color); font-size: 1.1rem;">Order #${order.id}</strong>
+                            <br><small style="color: var(--gray-500);">${new Date(order.timestamp).toLocaleDateString('en-GB')} • ${order.paymentMethod}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <button class="btn btn-primary" onclick="reorderPrevious(${order.id})" style="padding: 8px 15px; font-size: 0.9rem; margin-bottom: 5px;">🔄 Reorder</button>
+                            <br><span style="color: var(--success-emerald); font-weight: bold; font-size: 0.9rem;">✅ ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+                        </div>
+                    </div>
+                    <p style="color: var(--text-color);"><strong>Items:</strong> ${Object.values(order.items).map(item => `${item.name} x${item.quantity}`).join(', ')}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <p style="color: var(--text-color);"><strong>Total: GH₵ ${order.total.toFixed(2)}</strong></p>
+                        <span style="background: var(--ghana-gold); color: var(--gray-800); padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">+${order.loyaltyPoints || 0} pts earned</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function reorderPrevious(orderId) {
+            const order = orderHistory.find(o => o.id === orderId);
+            if (!order) {
+                showNotification('Order not found in history', 'error');
+                return;
+            }
+            
+            // Add all items from previous order to current cart
+            Object.values(order.items).forEach(item => {
+                if (cart[item.name]) {
+                    cart[item.name].quantity += item.quantity;
+                } else {
+                    cart[item.name] = { ...item };
+                }
+            });
+            
+            updateCartBadge();
+            showNotification(`Previous order #${orderId} added to cart! 🔄`, 'success');
+            showSection('menu');
+        }
+
+        function makeReservation(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            const reservation = {
+                date: formData.get('reservationDate'),
+                time: formData.get('reservationTime'),
+                partySize: formData.get('partySize'),
+                name: formData.get('reservationName'),
+                phone: formData.get('reservationPhone'),
+                occasion: formData.get('specialRequests') || 'Regular dining'
+            };
+            
+            // Simulate reservation confirmation
+            showNotification(`Reservation confirmed for ${reservation.name}! 📅`, 'success');
+            setTimeout(() => {
+                showNotification(`SMS confirmation sent to ${reservation.phone} 📱`, 'info');
+            }, 2000);
+            
+            alert(`🎉 Reservation Confirmed!\n\n📅 Date: ${reservation.date}\n🕐 Time: ${reservation.time}\n👥 Party size: ${reservation.partySize}\n👤 Name: ${reservation.name}\n📱 Phone: ${reservation.phone}\n🎉 Occasion: ${reservation.occasion}\n\nWe look forward to serving you at Akwaaba Restaurant! 🇬🇭`);
+            
+            // Reset form
+            event.target.reset();
+        }
+
+        function openReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="close-btn" onclick="closeModal('reviewModal')">&times;</button>
+                    <h2>⭐ Write a Review</h2>
+                    
+                    <form onsubmit="submitReview(event)">
+                        <div class="form-group">
+                            <label for="reviewName">Your Name *</label>
+                            <input type="text" id="reviewName" required placeholder="Enter your name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reviewRating">Rating *</label>
+                            <div style="display: flex; gap: 10px; margin-top: 5px;">
+                                ${[1,2,3,4,5].map(rating => `
+                                    <button type="button" class="rating-star" onclick="setRating(${rating})" style="background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--gray-300);">⭐</button>
+                                `).join('')}
+                            </div>
+                            <input type="hidden" id="reviewRating" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reviewDish">Favorite Dish</label>
+                            <select id="reviewDish">
+                                <option value="">Select a dish (optional)</option>
+                                ${menuItems.map(item => `<option value="${item.name}">${item.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reviewComment">Your Review *</label>
+                            <textarea id="reviewComment" rows="4" required placeholder="Tell us about your experience..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success">📝 Submit Review</button>
+                    </form>
+                </div>
+            `;
+            modal.style.display = 'block';
+        }
+
+        let selectedRating = 0;
+        function setRating(rating) {
+            selectedRating = rating;
+            document.getElementById('reviewRating').value = rating;
+            
+            // Update star display
+            document.querySelectorAll('.rating-star').forEach((star, index) => {
+                star.style.color = index < rating ? 'var(--ghana-gold)' : 'var(--gray-300)';
+            });
+        }
+
+        function submitReview(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            
+            const review = {
+                name: formData.get('reviewName'),
+                rating: selectedRating,
+                dish: formData.get('reviewDish'),
+                comment: formData.get('reviewComment'),
+                date: new Date().toLocaleDateString()
+            };
+            
+            // Add loyalty points for review
+            loyaltyPoints += 50;
+            updateLoyaltyPoints();
+            
+            closeModal('reviewModal');
+            showNotification(`Thank you ${review.name}! Review submitted and 50 bonus points added! ⭐`, 'success');
+        }
+
+        function showItemReviews(itemId) {
+            const item = menuItems.find(i => i.id === itemId);
+            if (!item) return;
+            
+            showNotification(`${item.name} has ${item.rating}/5 stars from ${item.reviews} reviews! ⭐`, 'info');
+        }
+
+        function openReservationModal() {
+            showSection('reservations');
+            setTimeout(() => {
+                document.getElementById('reservationDate').focus();
+            }, 100);
+        }
+
+        function toggleKitchenCam() {
+            const modal = document.getElementById('kitchenCamModal');
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="close-btn" onclick="closeModal('kitchenCamModal')">&times;</button>
+                    <h2>📹 Live Kitchen View</h2>
+                    
+                    <div style="background: var(--gray-800); color: white; padding: 40px; border-radius: 12px; text-align: center; margin: 20px 0;">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">👨‍🍳</div>
+                        <h3>Kitchen Live Stream</h3>
+                        <p>Watch our chefs prepare your food in real-time!</p>
+                        <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                            <strong>🔴 LIVE</strong> - Currently preparing: Jollof Rice, Banku with Tilapia
+                        </div>
+                        <small style="opacity: 0.7;">This is a demo view. In production, this would show real kitchen cameras.</small>
+                    </div>
+                    
+                    <div style="background: var(--success-emerald); color: white; padding: 15px; border-radius: 10px;">
+                        <strong>🛡️ Transparency Promise</strong><br>
+                        See exactly how your food is prepared with our live kitchen cameras - ensuring the highest standards of hygiene and quality!
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function startGroupOrder() {
+            const tableNumber = document.getElementById('groupTableNumber')?.value;
+            if (!tableNumber) {
+                showNotification('Please enter your table number first!', 'error');
+                return;
+            }
+            
+            // Update group order content
+            const groupContent = document.getElementById('groupOrderContent');
+            groupContent.innerHTML = `
+                <div style="background: var(--ghana-gold); color: var(--gray-800); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3>🎉 Group Order Active for Table ${tableNumber}!</h3>
+                    <p><strong>Share this link:</strong> akwaaba.com/group/table${tableNumber}</p>
+                    <button class="btn" onclick="shareGroupOrder(${tableNumber})" style="margin-top: 10px; background: var(--white); color: var(--ghana-gold);">📱 Share via WhatsApp</button>
+                </div>
+                
+                <div id="groupMembers" style="margin-bottom: 20px;">
+                    <h4>👥 Group Members (3 joined):</h4>
+                    <div style="background: var(--white); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        👤 <strong>Kwame A.</strong> - Jollof Rice x1, Sobolo x1 - GH₵ 33.00
+                    </div>
+                    <div style="background: var(--white); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        👤 <strong>Ama B.</strong> - Banku with Tilapia x1 - GH₵ 35.00
+                    </div>
+                    <div style="background: var(--white); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                        👤 <strong>You</strong> - ${Object.keys(cart).length > 0 ? Object.values(cart).map(item => `${item.name} x${item.quantity}`).join(', ') : 'No items yet'} - GH₵ ${Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}
+                    </div>
+                </div>
+                
+                <div style="background: var(--primary-blue); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                    <h3>Group Total: GH₵ ${(68.00 + Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0)).toFixed(2)}</h3>
+                    <div style="display: flex; gap: 15px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
+                        <button class="btn" onclick="splitBillEvenly()" style="background: var(--success-emerald);">💰 Split Evenly</button>
+                        <button class="btn" onclick="payIndividually()" style="background: var(--warning-amber);">👤 Pay Individual</button>
+                        <button class="btn" onclick="payGroupTotal()" style="background: var(--ghana-red);">🎯 Pay All</button>
+                    </div>
+                </div>
+            `;
+            
+            showNotification(`Group order started for Table ${tableNumber}! 👥`, 'success');
+        }
+
+        function shareGroupOrder(tableNumber) {
+            const shareText = `Join our group order at Akwaaba Restaurant! Table ${tableNumber}: https://akwaaba.com/group/table${tableNumber}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Join Group Order - Akwaaba Restaurant',
+                    text: shareText,
+                    url: `https://akwaaba.com/group/table${tableNumber}`
+                });
+            } else {
+                navigator.clipboard.writeText(shareText);
+                showNotification('Group order link copied to clipboard! 📱', 'success');
+            }
+        }
+
+        function quickGroupOrder() {
+            showSection('group');
+            const groupContent = document.getElementById('groupOrderContent');
+            groupContent.innerHTML = `
+                <div style="background: var(--primary-blue); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3>🚀 Quick Group Order</h3>
+                    <p>Start a group order and let everyone at your table add items from their phones!</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="groupTableNumber">Table Number *</label>
+                    <input type="number" id="groupTableNumber" placeholder="Enter your table number" min="1" max="50" required>
+                </div>
+                <button class="btn btn-primary" onclick="startGroupOrder()">🚀 Start Group Order</button>
+                
+                <div style="background: var(--gray-100); padding: 20px; border-radius: 12px; margin-top: 20px;">
+                    <h4>✨ Group Order Benefits:</h4>
+                    <ul style="margin: 10px 0; line-height: 1.8;">
+                        <li>🔗 Everyone orders from their own phone</li>
+                        <li>💰 Flexible payment splitting options</li>
+                        <li>📱 Real-time updates for all members</li>
+                        <li>🏆 Bonus loyalty points for group orders</li>
+                        <li>⚡ Faster kitchen coordination</li>
+                    </ul>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                document.getElementById('groupTableNumber')?.focus();
+            }, 100);
+        }
+
+        function splitBillEvenly() {
+            const total = 68.00 + Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const perPerson = total / 3;
+            showNotification(`Bill split evenly: GH₵ ${perPerson.toFixed(2)} per person 💰`, 'success');
+        }
+
+        function payIndividually() {
+            showNotification('Each person will pay for their own items 👤', 'info');
+        }
+
+        function payGroupTotal() {
+            showNotification('You selected to pay the entire group bill! 🎯', 'success');
+        }
+
+        function applyRandomWeatherRecommendation() {
+            const recommendations = [
+                "☀️ Perfect sunny day for our refreshing Sobolo! Try it with spicy Kelewele.",
+                "🌧️ Rainy weather? Warm up with our hearty Palm Nut Soup and hot Fufu!",
+                "⛅ Nice weather for dining! Our Jollof Rice pairs perfectly with today's breeze.",
+                "🌤️ Great day to try something new! How about our chef's special Banku with Tilapia?",
+                "🌈 Beautiful weather ahead! Perfect for our outdoor seating and fresh Orange Juice.",
+                "⚡ Energetic day calls for our protein-rich Groundnut Soup with beef!"
+            ];
+            
+            const weatherRec = document.getElementById('weatherRec');
+            if (weatherRec) {
+                weatherRec.textContent = recommendations[Math.floor(Math.random() * recommendations.length)];
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notificationCenter = document.getElementById('notificationCenter');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            notification.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; margin-left: 10px; font-size: 1.2rem;">&times;</button>
+                </div>
+            `;
+            
+            notificationCenter.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 5000);
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeBtn = document.querySelector('.theme-toggle');
+            themeBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+            
+            showNotification(`Switched to ${newTheme} mode! ${newTheme === 'dark' ? '🌙' : '☀️'}`, 'success');
+        }
+
+        function toggleLanguage() {
+            const langSelector = document.getElementById('languageSelector');
+            langSelector.classList.toggle('show');
+        }
+
+        function setLanguage(lang) {
+            if (lang === currentLanguage) {
+                toggleLanguage();
+                return;
+            }
+            
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            
+            document.getElementById('languageSelector').classList.remove('show');
+            
+            updateLanguage();
+            showNotification(`Language changed to ${getLanguageName(lang)}! 🌍`, 'success');
+        }
+
+        function getLanguageName(lang) {
+            const names = {
+                'en': 'English',
+                'tw': 'Twi',
+                'ga': 'Ga', 
+                'ee': 'Ewe'
+            };
+            return names[lang] || 'English';
+        }
+
+        // Admin Functions
+        function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            
+            if (password === 'kitchen123') {
+                isAdminLoggedIn = true;
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                loadAdminDashboard();
+                showNotification('Welcome to the kitchen dashboard! 👨‍🍳', 'success');
+            } else {
+                showNotification('Incorrect password. Try: kitchen123', 'error');
+            }
+        }
+
+        function loadAdminDashboard() {
+            const adminContent = document.getElementById('adminContent');
+            if (!adminContent) return;
+            
+            const todayOrders = Object.values(orders).length + 46; // Simulate daily orders
+            const todayRevenue = Object.values(orders).reduce((sum, order) => sum + order.total, 0) + 1803.50;
+            const avgPrepTime = 12;
+            const customerRating = 4.8;
+            
+            adminContent.innerHTML = `
+                <!-- Analytics Cards -->
+                <div class="analytics-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">${todayOrders}</span>
+                        <div class="stat-label">Orders Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">GH₵ ${todayRevenue.toFixed(0)}</span>
+                        <div class="stat-label">Revenue Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">${avgPrepTime} min</span>
+                        <div class="stat-label">Avg Prep Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">${customerRating}⭐</span>
+                        <div class="stat-label">Customer Rating</div>
+                    </div>
+                </div>
+
+                <!-- Inventory Alerts -->
+                <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    ⚠️ <strong>Inventory Alerts:</strong> Palm nuts running low (5 portions left). Red beans need restocking. Fresh tilapia delivery expected at 3 PM.
+                </div>
+
+                <!-- Popular Items Today -->
+                <div style="background: var(--success-emerald); color: white; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                    <h4>🔥 Trending Today</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem;">🍚</div>
+                            <strong>Jollof Rice</strong><br>
+                            <small>23 orders</small>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem;">🐟</div>
+                            <strong>Banku & Tilapia</strong><br>
+                            <small>18 orders</small>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem;">🧃</div>
+                            <strong>Sobolo</strong><br>
+                            <small>31 orders</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Communication -->
+                <div style="background: var(--primary-blue); color: white; padding: 15px; border-radius: 10px; margin: 20px 0;">
+                    <h4>💬 Staff Messages</h4>
+                    <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 6px;">
+                        🔔 Table 3 requesting extra napkins - <strong>Waiter assigned ✅</strong>
+                    </div>
+                    <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 6px;">
+                        ⚠️ Customer at Table 7 has nut allergy - <strong>Kitchen notified ✅</strong>
+                    </div>
+                    <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 6px;">
+                        📱 Mobile Money payment pending for Order #1001 - <strong>Following up</strong>
+                    </div>
+                </div>
+
+                <!-- Active Orders -->
+                <h3>🔥 Active Orders</h3>
+                <div id="adminOrdersList" style="margin-top: 15px;">
+                    ${displayAdminOrdersContent()}
+                </div>
+            `;
+        }
+
+        function displayAdminOrdersContent() {
+            const activeOrders = Object.values(orders).filter(order => order.status !== 'delivered');
+            
+            if (activeOrders.length === 0) {
+                return '<div style="background: var(--white); padding: 20px; border-radius: 12px; text-align: center; color: var(--gray-500);">No active orders 😴<br><small>All caught up! Great work team.</small></div>';
+            }
+            
+            return activeOrders.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).map(order => {
+                const timeAgo = Math.floor((Date.now() - new Date(order.timestamp)) / 60000);
+                
+                let statusButton = '';
+                let urgencyClass = timeAgo > 20 ? 'border-left: 5px solid var(--danger-rose);' : timeAgo > 10 ? 'border-left: 5px solid var(--warning-amber);' : 'border-left: 5px solid var(--success-emerald);';
+                
+                if (order.status === 'new') {
+                    statusButton = `<button onclick="updateOrderStatus(${order.id}, 'preparing')" style="background: var(--warning-amber); color: white; border: none; padding: 10px 18px; border-radius: 20px; cursor: pointer; font-weight: 500;">🚀 Start Cooking</button>`;
+                } else if (order.status === 'preparing') {
+                    statusButton = `<button onclick="updateOrderStatus(${order.id}, 'ready')" style="background: var(--success-emerald); color: white; border: none; padding: 10px 18px; border-radius: 20px; cursor: pointer; font-weight: 500;">✅ Mark Ready</button>`;
+                } else if (order.status === 'ready') {
+                    statusButton = `<button onclick="updateOrderStatus(${order.id}, 'delivered')" style="background: var(--gray-500); color: white; border: none; padding: 10px 18px; border-radius: 20px; cursor: pointer; font-weight: 500;">📦 Mark Delivered</button>`;
+                }
+                
+                return `
+                    <div style="background: var(--white); border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; ${urgencyClass}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h3 style="color: var(--text-color); margin-bottom: 5px;">Order #${order.id} ${timeAgo > 15 ? '🚨' : timeAgo > 8 ? '⚠️' : '✅'}</h3>
+                                <small style="color: var(--gray-500);">${timeAgo} minutes ago • ${order.paymentMethod}</small>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                                <span style="background: var(--${order.status === 'new' ? 'danger-rose' : order.status === 'preparing' ? 'warning-amber' : 'success-emerald'}); color: white; padding: 8px 16px; border-radius: 25px; font-size: 0.9rem; font-weight: 500;">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+                                ${statusButton}
+                            </div>
+                        </div>
+                        
+                        <div style="background: var(--gray-50); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                <div>
+                                    <strong>📍 Table ${order.table}</strong><br>
+                                    <small>Table location</small>
+                                </div>
+                                <div>
+                                    <strong>👤 ${order.customerName}</strong><br>
+                                    <small>Customer name</small>
+                                </div>
+                                <div>
+                                    <strong>📱 ${order.customerPhone}</strong><br>
+                                    <small>Contact number</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: var(--text-color); margin-bottom: 15px;">🍽️ Order Items:</h4>
+                            <div style="display: grid; gap: 10px;">
+                                ${Object.values(order.items).map(item => `
+                                    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <strong>${item.name}</strong> × ${item.quantity}
+                                            ${item.quantity > 2 ? '<span style="background: var(--warning-amber); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: 8px;">Large Qty</span>' : ''}
+                                        </div>
+                                        <div style="font-weight: bold; color: var(--ghana-red);">GH₵ ${(item.price * item.quantity).toFixed(2)}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 2px solid var(--gray-200);">
+                            <div><strong style="font-size: 1.2rem; color: var(--text-color);">💰 Total: GH₵ ${order.total.toFixed(2)}</strong></div>
+                            <div style="color: var(--success-emerald); font-weight: 500;">🏆 +${order.loyaltyPoints || 0} pts for customer</div>
+                        </div>
+                        
+                        ${order.specialInstructions ? `
+                            <div style="background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                                <strong>📝 Special Instructions:</strong> ${order.specialInstructions}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            if (orders[orderId]) {
+                const oldStatus = orders[orderId].status;
+                orders[orderId].status = newStatus;
+                
+                // Update admin dashboard
+                if (isAdminLoggedIn) {
+                    loadAdminDashboard();
+                }
+                
+                // Simulate customer notifications
+                const statusMessages = {
+                    'preparing': `🍳 Your order #${orderId} is now being prepared by our chefs!`,
+                    'ready': `✅ Order #${orderId} is ready for pickup! Please come to the counter.`,
+                    'delivered': `🎉 Order #${orderId} delivered! Thank you for dining with Akwaaba Restaurant!`
+                };
+                
+                showNotification(`Order #${orderId}: ${oldStatus} → ${newStatus}`, 'success');
+                
+                // Simulate SMS notification to customer
+                if (statusMessages[newStatus]) {
+                    setTimeout(() => {
+                        showNotification(`📱 SMS sent: "${statusMessages[newStatus]}"`, 'info');
+                    }, 1000);
+                }
+                
+                // Add loyalty points bonus for quick service
+                if (newStatus === 'ready') {
+                    const prepTime = Math.floor((Date.now() - new Date(orders[orderId].timestamp)) / 60000);
+                    if (prepTime <= 15) {
+                        setTimeout(() => {
+                            showNotification(`⚡ Quick service bonus: +25 points added to customer account!`, 'success');
+                        }, 2000);
+                    }
+                }
+            }
+        }
+
+        function updateOrderStatuses() {
+            // Auto-progression of orders for demo
+            Object.values(orders).forEach(order => {
+                const minutesOld = Math.floor((Date.now() - new Date(order.timestamp)) / 60000);
+                
+                if (order.status === 'new' && minutesOld >= 3) {
+                    order.status = 'preparing';
+                } else if (order.status === 'preparing' && minutesOld >= 18) {
+                    order.status = 'ready';
+                }
+            });
+            
+            // Update admin dashboard if visible
+            if (isAdminLoggedIn && document.getElementById('admin').classList.contains('active')) {
+                const adminOrdersList = document.getElementById('adminOrdersList');
+                if (adminOrdersList) {
+                    adminOrdersList.innerHTML = displayAdminOrdersContent();
+                }
+            }
+        }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            
+            // Remove active class from all nav buttons  
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected section and activate button
+            const targetSection = document.getElementById(sectionName);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Find and activate the corresponding nav button
+            const correspondingButton = Array.from(document.querySelectorAll('.nav-btn')).find(btn => 
+                btn.onclick && btn.onclick.toString().includes(`showSection('${sectionName}')`)
+            );
+            if (correspondingButton) {
+                correspondingButton.classList.add('active');
+            }
+            
+            // Section-specific initialization
+            if (sectionName === 'favorites') {
+                loadFavorites();
+            } else if (sectionName === 'history') {
+                loadOrderHistory();
+            } else if (sectionName === 'group') {
+                quickGroupOrder();
+            } else if (sectionName === 'admin' && isAdminLoggedIn) {
+                loadAdminDashboard();
+            } else if (sectionName === 'about') {
+                loadAboutSection();
+            } else if (sectionName !== 'track') {
+                const trackingResult = document.getElementById('trackingResult');
+                if (trackingResult) {
+                    trackingResult.style.display = 'none';
+                }
+            }
+            
+            // Hide language selector
+            document.getElementById('languageSelector').classList.remove('show');
+        }
+
+        function loadAboutSection() {
+            const aboutContent = document.getElementById('aboutContent');
+            if (!aboutContent) return;
+            
+            aboutContent.innerHTML = `
+                <p style="font-size: 1.2rem; line-height: 1.8; margin-bottom: 25px; color: var(--text-color);">
+                    Welcome to Akwaaba Restaurant! We're Ghana's most innovative dining experience, combining authentic traditional flavors with cutting-edge technology to serve you better.
+                </p>
+                
+                <div style="background: linear-gradient(45deg, var(--ghana-red), var(--ghana-gold)); color: white; padding: 25px; border-radius: 15px; margin: 25px 0;">
+                    <h3>🇬🇭 Proudly Ghanaian</h3>
+                    <p style="margin-top: 10px; line-height: 1.6;">From our traditional Akan recipes passed down through generations to our modern Accra favorites, we celebrate the rich culinary heritage that makes Ghana special. Every dish tells a story of our beautiful culture.</p>
+                </div>
+
+                <h3 style="color: var(--text-color); margin: 30px 0 20px 0;">🌟 Premium Features</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div style="background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 10px;">🤖 AI-Powered</h4>
+                        <p>Smart recommendations based on weather, preferences, and trending items.</p>
+                    </div>
+                    <div style="background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 10px;">👥 Group Ordering</h4>
+                        <p>Multiple people can order from the same table with flexible payment splitting.</p>
+                    </div>
+                    <div style="background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 10px;">💰 Mobile Money</h4>
+                        <p>MTN, AirtelTigo, and Vodafone Cash integration - pay the Ghanaian way!</p>
+                    </div>
+                    <div style="background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 10px;">🏆 Loyalty Rewards</h4>
+                        <p>Earn points with every order, unlock VIP benefits and exclusive discounts.</p>
+                    </div>
+                    <div style="background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 10px;">🌍 Multi-Language</h4>
+                        <p>Order in English, Twi, Ga, or Ewe - we speak your language!</p>
+                    </div>
+                    <div style="background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 10px;">🎤 Voice Ordering</h4>
+                        <p>Say "Add Jollof Rice to cart" and let technology do the work!</p>
+                    </div>
+                </div>
+
+                <div style="background: var(--success-emerald); color: white; padding: 25px; border-radius: 15px; margin: 30px 0;">
+                    <h3>📱 How Technology Enhances Your Experience</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">📱</div>
+                            <strong>QR Code Ordering</strong>
+                            <p style="font-size: 0.9rem; margin-top: 5px;">No waiting for servers, instant menu access</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">⏰</div>
+                            <strong>Real-Time Tracking</strong>
+                            <p style="font-size: 0.9rem; margin-top: 5px;">Know exactly when your food will be ready</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">📹</div>
+                            <strong>Live Kitchen View</strong>
+                            <p style="font-size: 0.9rem; margin-top: 5px;">Watch your food being prepared with transparency</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">🎯</div>
+                            <strong>Smart Analytics</strong>
+                            <p style="font-size: 0.9rem; margin-top: 5px;">Personalized recommendations just for you</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: var(--white); padding: 25px; border-radius: 15px; margin: 30px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h3 style="color: var(--text-color); margin-bottom: 20px;">📍 Visit Us</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        <div>
+                            <h4 style="color: var(--ghana-red); margin-bottom: 10px;">🕐 Operating Hours</h4>
+                            <p>Monday - Sunday: 10:00 AM - 10:00 PM<br>
+                            Happy Hour: 3:00 PM - 6:00 PM (20% off drinks!)</p>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--ghana-red); margin-bottom: 10px;">📍 Location</h4>
+                            <p>123 Liberation Road<br>
+                            Accra Central, Ghana<br>
+                            Near the National Theatre</p>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--ghana-red); margin-bottom: 10px;">📞 Contact</h4>
+                            <p>Phone: +233 20 123 4567<br>
+                            WhatsApp: +233 20 123 4567<br>
+                            Email: hello@akwaabarestaurant.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: linear-gradient(45deg, var(--primary-blue), var(--secondary-purple)); color: white; padding: 25px; border-radius: 15px; text-align: center; margin: 30px 0;">
+                    <h3>🌟 Share the Experience</h3>
+                    <p style="margin: 15px 0;">Love dining with us? Spread the word and help others discover authentic Ghanaian cuisine!</p>
+                    <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+                        <button class="btn" onclick="shareToWhatsApp()" style="background: #25d366; padding: 10px 20px;">📱 Share on WhatsApp</button>
+                        <button class="btn" onclick="shareToTwitter()" style="background: #1da1f2; padding: 10px 20px;">🐦 Tweet About Us</button>
+                        <button class="btn" onclick="shareToFacebook()" style="background: #4267b2; padding: 10px 20px;">📘 Facebook Share</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function shareToWhatsApp() {
+            const text = "Just discovered Akwaaba Restaurant! 🇬🇭 Amazing Ghanaian food with high-tech ordering. You can even order in Twi! Check them out: akwaabarestaurant.com";
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function shareToTwitter() {
+            const text = "Just had an amazing meal at @AkwaabaRestaurant! 🇬🇭 Best Jollof Rice in Accra + futuristic QR ordering system. Ghana is leading the way! 🚀 #GhanaianFood #Innovation";
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function shareToFacebook() {
+            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://akwaabarestaurant.com')}`;
+            window.open(url, '_blank');
+        }
+
+        // Initialize everything when page loads
+        window.addEventListener('load', function() {
+            // Load saved preferences
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            document.querySelector('.theme-toggle').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+            
+            // Initialize app
+            init();
+            
+            // Set random AI recommendation
+            const aiRecommendations = [
+                "Based on your taste profile and today's weather, try our Banku with Tilapia! It's trending with 94% satisfaction rate.",
+                "Your loyalty history suggests you'd love our Palm Nut Soup - similar customers rate it 4.9/5 stars!",
+                "Perfect weather for our refreshing Sobolo! Pairs excellently with spicy Kelewele.",
+                "Since you enjoyed Jollof Rice last time, you might love our chef's special Waakye today!",
+                "Trending now: Red Red with 89% reorder rate. Your taste profile matches customers who love this dish!"
+            ];
+            
+            const aiRecText = document.getElementById('aiRecText');
+            if (aiRecText) {
+                aiRecText.textContent = aiRecommendations[Math.floor(Math.random() * aiRecommendations.length)];
+            }
+        });
+
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>            <strong style="color: var(--text-color);">${item.name}</strong><br>
                                             <small style="color: var(--gray-500);">GH₵ ${item.price.toFixed(2)} each • +${item.points || 0} pts</small>
                                         </div>
                                         <div style="display: flex; align-items: center; gap: 10px;">
