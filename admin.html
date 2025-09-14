@@ -71,11 +71,22 @@
             cursor: pointer;
             font-size: 0.9rem;
             transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .admin-btn:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: translateY(-1px);
+        }
+
+        .customer-link {
+            background: var(--ghana-green) !important;
+        }
+
+        .customer-link:hover {
+            background: var(--ghana-gold) !important;
+            color: var(--gray-800) !important;
         }
 
         .container {
@@ -661,14 +672,24 @@
                 width: 100%;
                 justify-content: space-between;
             }
+
+            .admin-controls {
+                gap: 8px;
+            }
+
+            .admin-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="admin-header">
-        <h1>🏪 Akwaaba Restaurant - Admin Dashboard</h1>
+        <h1>🍪 Akwaaba Restaurant - Admin Dashboard</h1>
         <p>Real-time kitchen and restaurant management</p>
         <div class="admin-controls">
+            <a href="index.html" class="admin-btn customer-link">🛒 Customer View</a>
             <button class="admin-btn" onclick="refreshData()">🔄 Refresh Data</button>
             <button class="admin-btn" onclick="toggleSound()">🔊 Sound Alerts</button>
             <button class="admin-btn" onclick="showSettings()">⚙️ Settings</button>
@@ -809,7 +830,7 @@
                                     <small style="color: var(--gray-500);">23 orders</small>
                                 </div>
                             </div>
-                            <div style="color: var(--success); font-weight: bold;">↑ 18%</div>
+                            <div style="color: var(--success); font-weight: bold;">↗ 18%</div>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--gray-50); border-radius: 8px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -819,7 +840,7 @@
                                     <small style="color: var(--gray-500);">18 orders</small>
                                 </div>
                             </div>
-                            <div style="color: var(--success); font-weight: bold;">↑ 12%</div>
+                            <div style="color: var(--success); font-weight: bold;">↗ 12%</div>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--gray-50); border-radius: 8px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -829,7 +850,7 @@
                                     <small style="color: var(--gray-500);">31 orders</small>
                                 </div>
                             </div>
-                            <div style="color: var(--success); font-weight: bold;">↑ 25%</div>
+                            <div style="color: var(--success); font-weight: bold;">↗ 25%</div>
                         </div>
                     </div>
                 </div>
@@ -1016,11 +1037,11 @@
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span>Customer satisfaction</span>
-                            <span style="color: var(--success); font-weight: bold;">4.8/5 ↑</span>
+                            <span style="color: var(--success); font-weight: bold;">4.8/5 →</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span>Order accuracy</span>
-                            <span style="color: var(--success); font-weight: bold;">98.5% ↑</span>
+                            <span style="color: var(--success); font-weight: bold;">98.5% →</span>
                         </div>
                     </div>
                 </div>
