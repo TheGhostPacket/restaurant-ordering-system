@@ -83,6 +83,26 @@
             display: none;
         }
 
+        .admin-link {
+            position: absolute;
+            top: 60px;
+            right: 15px;
+            background: var(--ghana-red);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .admin-link:hover {
+            background: var(--primary-blue);
+            transform: translateY(-1px);
+        }
+
         .header h1 {
             color: var(--gray-800);
             margin-bottom: 10px;
@@ -603,7 +623,7 @@
                 font-size: 1.8rem;
             }
             
-            .loyalty-badge, .install-btn {
+            .loyalty-badge, .install-btn, .admin-link {
                 position: relative;
                 top: 0;
                 left: 0;
@@ -641,6 +661,7 @@
         <div class="header">
             <div class="loyalty-badge" id="loyaltyPoints">👑 VIP - 1,250 pts</div>
             <button class="install-btn" id="installBtn" onclick="installApp()">📱 Install App</button>
+            <a href="admin.html" class="admin-link">👨‍🍳 Kitchen Dashboard</a>
 
             <h1>🍽️ Akwaaba Restaurant</h1>
             <p style="font-size: 1.1rem; color: var(--gray-500); margin-bottom: 15px;">
